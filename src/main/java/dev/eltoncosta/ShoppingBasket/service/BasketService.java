@@ -6,6 +6,8 @@ import dev.eltoncosta.ShoppingBasket.controller.request.PaymentRequest;
 import dev.eltoncosta.ShoppingBasket.entity.Basket;
 import dev.eltoncosta.ShoppingBasket.entity.Product;
 import dev.eltoncosta.ShoppingBasket.entity.Status;
+import dev.eltoncosta.ShoppingBasket.exceptions.BusinessException;
+import dev.eltoncosta.ShoppingBasket.exceptions.DataNotFoundException;
 import dev.eltoncosta.ShoppingBasket.repository.BasketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,22 +27,10 @@ public class BasketService {
 
         basketRepository.findByClientAndStatus(basketRequest.clientId(), Status.OPEN)
                 .ifPresent(basket -> {
-                    throw new IllegalStateException("There is already an open basket for this client.");
+                    throw new BusinessException("There is already an open basket for this client.");
                 });
 
-        List<Product> products = new ArrayList<>();
-        basketRequest.products().forEach(product -> {
-            PlatziProductResponse productById = productService.getProductById(product.id());
-
-            products.add(
-                    Product.builder()
-                            .id(productById.id())
-                            .title(productById.title())
-                            .price(productById.price())
-                            .quantity(product.quantity())
-                            .build()
-            );
-        });
+        List<Product> products = getProducts(basketRequest);
 
         Basket basket = Basket.builder()
                 .client(basketRequest.clientId())
@@ -51,18 +41,7 @@ public class BasketService {
         return basketRepository.save(basket);
     }
 
-    public Basket getBasketById(String id) {
-        return basketRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Basket not found with id: " + id));
-    }
-
-    public Basket updateBasket(String id, BasketRequest basketRequest) {
-        Basket basket = getBasketById(id);
-
-        if (!basket.getStatus().equals(Status.OPEN)) {
-            throw new IllegalStateException("Cannot update a closed basket.");
-        }
-
+    private List<Product> getProducts(BasketRequest basketRequest) {
         List<Product> products = new ArrayList<>();
         basketRequest.products().forEach(product -> {
             PlatziProductResponse productById = productService.getProductById(product.id());
@@ -76,6 +55,22 @@ public class BasketService {
                             .build()
             );
         });
+        return products;
+    }
+
+    public Basket getBasketById(String id) {
+        return basketRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Basket not found with id: " + id));
+    }
+
+    public Basket updateBasket(String id, BasketRequest basketRequest) {
+        Basket basket = getBasketById(id);
+
+        if (!basket.getStatus().equals(Status.OPEN)) {
+            throw new BusinessException("Cannot update a closed basket.");
+        }
+
+        List<Product> products = getProducts(basketRequest);
 
         basket.setProducts(products);
         basket.calculateTotalPrice();
@@ -97,7 +92,7 @@ public class BasketService {
     public void deleteBasket(String id) {
         Basket basket = getBasketById(id);
         if (!basket.getStatus().equals(Status.OPEN)) {
-            throw new IllegalStateException("Cannot close a closed basket.");
+            throw new BusinessException("Cannot close a closed basket.");
         }
         basket.setStatus(Status.CLOSED);
         basketRepository.delete(basket);
