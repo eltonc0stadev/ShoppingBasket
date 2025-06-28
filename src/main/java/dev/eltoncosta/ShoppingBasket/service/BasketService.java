@@ -98,4 +98,8 @@ public class BasketService {
         basketRepository.delete(basket);
     }
 
+    public List<Basket> getAll() {
+        return basketRepository.findAll();
+    }
+
 }

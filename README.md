@@ -95,3 +95,11 @@ Pull requests são bem-vindos! Para grandes mudanças, abra uma issue primeiro p
 ## Licença
 Este projeto está sob a licença MIT.
 
+## Tecnologias usadas no Frontend
+
+- Thymeleaf (template engine)
+- Bootstrap 5 (CSS framework via CDN)
+- HTML5
+- CSS3 (customizado nos templates)
+
+Essas tecnologias proporcionam uma interface web responsiva, moderna e fácil de manter para o sistema de cestas de compras.

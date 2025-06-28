@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Criar Nova Cesta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .main-card { margin-top: 5vh; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+        .table th, .table td { vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card main-card p-4">
+                <h1 class="mb-4">Criar Nova Cesta</h1>
+                <form action="/baskets" method="post">
+                    <div class="mb-3">
+                        <label for="customerId" class="form-label">ID do Cliente:</label>
+                        <input type="number" id="customerId" name="customerId" required class="form-control">
+                    </div>
+                    <h3 class="mt-4">Produtos</h3>
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Selecionar</th>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Preço</th>
+                            <th>Quantidade</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="product, iter : ${products}">
+                            <td>
+                                <input type="checkbox" th:id="'product_' + ${product.id}" th:name="'productId'" th:value="${product.id}">
+                            </td>
+                            <td th:text="${product.id}"></td>
+                            <td th:text="${product.title}"></td>
+                            <td th:text="${product.price}"></td>
+                            <td>
+                                <input type="number" min="0" th:name="'quantity'" th:value="0" style="width:60px;" class="form-control">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-success">Criar</button>
+                    <a href="/baskets" class="btn btn-secondary ms-2">Voltar para Cestas</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
